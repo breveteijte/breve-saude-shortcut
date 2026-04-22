@@ -1,4 +1,4 @@
-name: Build Breve Saude Shortcut
+name: Build Shortcut
 
 on:
   push:
@@ -9,19 +9,18 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install Cherri
         run: brew install electrikmilk/cherri/cherri
 
-      - name: Compile and Sign Shortcut
+      - name: Build
         run: |
           cherri breve-saude.cherri --hubsign
           find . -name "*.shortcut" -type f
 
-      - name: Upload Shortcut
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: breve-saude-shortcut
+          name: shortcut
           path: "*.shortcut"
