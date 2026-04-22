@@ -1,57 +1,27 @@
-/*
-   Breveaúde
-*/
+name: Build Breve Saude Shortcut
 
-#define name Breve Saúde
-#define glyph heart
-#define color red
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-#include 'actions/web'
-#include 'actions/scripting'
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-@nome = prompt("Digite seu nome completo:")
+      - name: Install Cherri
+        run: brew install electrikmilk/cherri/cherri
 
-rawAction("is.workflow.actions.health.quantity.read", {
-    "WFHealthReadType": "Steps",
-    "WFHealthReadStartDate": "Today at Midnight",
-    "WFHealthReadEndDate": "Now",
-    "WFHealthReadAggregationStyle": "Sum"
-})
-@passos = ShortcutInput
+      - name: Compile and Sign Shortcut
+        run: |
+          cherri breve-saude.cherri --hubsign
+          find . -name "*.shortcut" -type f
 
-rawAction("is.workflow.actions.health.quantity.read", {
-    "WFHealthReadType": "Active Energy Burned",
-    "WFHealthReadStartDate": "Today at Midnight",
-    "WFHealthReadEndDate": "Now",
-    "WFHealthReadAggregationStyle": "Sum"
-})
-@calorias = ShortcutInput
-
-rawAction("is.workflow.actions.health.quantity.read", {
-    "WFHealthReadType": "Walking + Running Distance",
-    "WFHealthReadStartDate": "Today at Midnight",
-    "WFHealthReadEndDate": "Now",
-    "WFHealthReadAggregationStyle": "Sum"
-})
-@distancia = ShortcutInput
-
-rawAction("is.workflow.actions.health.quantity.read", {
-    "WFHealthReadType": "Heart Rate",
-    "WFHealthReadStartDate": "Today at Midnight",
-    "WFHealthReadEndDate": "Now",
-    "WFHealthReadAggregationStyle": "Average"
-})
-@fc = ShortcutInput
-
-jsonRequest("https://api.fitnesscience.com.br/sync.php", "POST", {
-    "cliente": "{nome}",
-    "plataforma": "ios",
-    "dados": {
-        "passos": "{passos}",
-        "calorias": "{calorias}",
-        "distancia": "{distancia}",
-        "fc_media": "{fc}"
-    }
-})
-
-showNotification("Dados enviados para a clínica!", "Breve Saúde ✅")
+      - name: Upload Shortcut
+        uses: actions/upload-artifact@v4
+        with:
+          name: breve-saude-shortcut
+          path: "*.shortcut"
