@@ -1,0 +1,30 @@
+name: Build Breve Saúde Shortcut
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Cherri
+        run: |
+          brew install electrikmilk/cherri/cherri
+
+      - name: Compile and Sign Shortcut
+        run: |
+          cherri breve-saude.cherri --hubsign
+          ls -la *.shortcut || echo "Procurando arquivos..."
+          find . -name "*.shortcut" -type f
+
+      - name: Upload Shortcut
+        uses: actions/upload-artifact@v4
+        with:
+          name: breve-saude-shortcut
+          path: "*.shortcut"
